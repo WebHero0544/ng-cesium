@@ -1,0 +1,1 @@
+export * from './no-found-page/no-found-page.component'
