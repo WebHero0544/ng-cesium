@@ -26,7 +26,7 @@ export class VgisComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
 
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NTcxMzFiYS04NmQ2LTRhOWEtOWU0OS0zNWNlODdiYWYxODYiLCJpZCI6MzEzNywiaWF0IjoxNTM2MTQyNTc3fQ.g5qWOspOnxCNXPUoTzWyxQDjWqicNLOwJ9QaQUWRzAA';
-    
+
 
 
     this.viewer = new Cesium.Viewer('cesiumContainer', this.vgisService.viewerOption);
@@ -35,7 +35,7 @@ export class VgisComponent implements OnInit, AfterViewInit {
 
     this.draw();
 
-
+    this.cs()
 
   }
 
@@ -46,7 +46,7 @@ export class VgisComponent implements OnInit, AfterViewInit {
 
         const placeList = []
         data.list.SiteInfo.forEach(el => {
-          const zb = [+el.longitude, +el.latitude, +el.height]
+          const zb = [+el.longitude, +el.latitude]
           placeList.push(...zb);
           this.point(zb, el.name)
         });
@@ -69,7 +69,8 @@ export class VgisComponent implements OnInit, AfterViewInit {
         pixelSize: 5,
         color: Cesium.Color.RED,
         outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2
+        outlineWidth: 2,
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
       },
       label: {
         text: text,
@@ -77,7 +78,9 @@ export class VgisComponent implements OnInit, AfterViewInit {
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         outlineWidth: 2,
         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        pixelOffset: new Cesium.Cartesian2(0, -9)
+        pixelOffset: new Cesium.Cartesian2(0, -9),
+        showBackground: true,
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
       }
     });
   }
@@ -114,13 +117,14 @@ export class VgisComponent implements OnInit, AfterViewInit {
           href="http://en.wikipedia.org/wiki/Wyoming">Wikpedia</a>\
       </p>',
       polyline: {
-        positions: Cesium.Cartesian3.fromDegreesArrayHeights(placeList),
+        positions: Cesium.Cartesian3.fromDegreesArray(placeList),
         width: 10,
         material: new Cesium.PolylineOutlineMaterialProperty({
           color: Cesium.Color.ORANGE,
           outlineWidth: 2,
           outlineColor: Cesium.Color.BLACK
-        })
+        }),
+        clampToGround: true
       }
     });
 
@@ -180,6 +184,28 @@ export class VgisComponent implements OnInit, AfterViewInit {
       geometryInstances: instances,
       appearance: new Cesium.PerInstanceColorAppearance()
     }));
+  }
+
+
+
+  cs() {
+    let index = -1
+    const cb = () => {
+      index++
+      index = index % 6
+      return require(`../../../assets/img/bj${index}.png`)
+    }
+
+    var redRectangle = this.viewer.entities.add({
+      name: 'Red translucent rectangle',
+      rectangle: {
+        coordinates: Cesium.Rectangle.fromDegrees(-110.0, 20.0, -95.0, 25.0),
+        // material: Cesium.Color.RED.withAlpha(0.5)
+        material: new Cesium.ImageMaterialProperty({
+          image: new Cesium.CallbackProperty(cb, false)
+        })
+      }
+    })
   }
 
 }
